@@ -4,13 +4,13 @@
 }
 
 .island-lottery-card {
-  --island-lottery-card-bg: #111d27;
-  --island-lottery-surface: #172631;
-  --island-lottery-border: #2a3d4a;
-  --island-lottery-text: #e6edf2;
-  --island-lottery-muted: #8da3b4;
-  --island-lottery-teal: #2bb8c8;
-  --island-lottery-gold: #d5a354;
+  --island-lottery-card-bg: var(--secondary);
+  --island-lottery-surface: var(--primary-very-low);
+  --island-lottery-border: var(--primary-low);
+  --island-lottery-text: var(--primary);
+  --island-lottery-muted: var(--primary-medium);
+  --island-lottery-teal: var(--tertiary);
+  --island-lottery-gold: var(--highlight);
   position: relative;
   overflow: hidden;
   margin: 0;
@@ -19,7 +19,7 @@
   border-radius: 0.9rem;
   color: var(--island-lottery-text);
   background: var(--island-lottery-card-bg);
-  box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 16%);
+  box-shadow: 0 0.75rem 2rem var(--primary-low);
 
   &::before {
     position: absolute;
@@ -65,7 +65,7 @@
     width: 2.45rem;
     height: 2.45rem;
     place-items: center;
-    border: 1px solid rgb(213 163 84 / 35%);
+    border: 1px solid var(--highlight-low);
     border-radius: 0.65rem;
     color: var(--island-lottery-gold);
     background: var(--island-lottery-surface);
@@ -106,7 +106,7 @@
     height: 0.45rem;
     border-radius: 50%;
     background: currentcolor;
-    box-shadow: 0 0 0 3px rgb(43 184 200 / 12%);
+    box-shadow: 0 0 0 3px var(--tertiary-very-low);
   }
 
   &__status time {
@@ -181,7 +181,7 @@
     margin-top: 1rem;
     border: 0;
     border-radius: 0.55rem;
-    color: #0b2029;
+    color: var(--secondary);
     background: var(--island-lottery-teal);
     font-size: var(--font-0);
     font-weight: 700;
@@ -189,13 +189,13 @@
 
     &:hover:not(:disabled),
     &:focus-visible:not(:disabled) {
-      color: #07171d;
-      background: #48c8d5;
-      box-shadow: 0 0.35rem 1rem rgb(43 184 200 / 20%);
+      color: var(--secondary);
+      background: var(--tertiary-hover);
+      box-shadow: 0 0.35rem 1rem var(--tertiary-low);
     }
 
     &:disabled {
-      border: 1px solid rgb(43 184 200 / 45%);
+      border: 1px solid var(--tertiary-low);
       color: var(--island-lottery-teal);
       background: transparent;
       opacity: 1;
@@ -239,7 +239,7 @@
     font-size: var(--font-down-1);
 
     &:hover {
-      color: #48c8d5;
+      color: var(--tertiary-hover);
       background: transparent;
     }
   }
