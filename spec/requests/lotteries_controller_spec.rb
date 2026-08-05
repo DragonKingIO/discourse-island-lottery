@@ -58,4 +58,32 @@ RSpec.describe DiscourseIslandLottery::LotteriesController do
 
     expect(response.status).to eq(400)
   end
+
+  it "creates a lottery together with a new topic from composer parameters" do
+    sign_in(creator)
+
+    post "/posts.json",
+         params: {
+           title: "带抽奖的新话题",
+           raw: "回复本话题即可参与抽奖。",
+           archetype: Archetype.default,
+           island_lottery_create: true,
+           island_lottery_prize: "测试奖品",
+           island_lottery_closes_at: 1.day.from_now.iso8601,
+           island_lottery_winners_count: 3,
+           island_lottery_min_trust_level: 1,
+           island_lottery_max_trust_level: 3,
+         }
+
+    expect(response.status).to eq(200)
+    topic_id = response.parsed_body.dig("post", "topic_id") || response.parsed_body["topic_id"]
+    lottery = DiscourseIslandLottery::Lottery.find_by!(topic_id:)
+    expect(lottery).to have_attributes(
+      creator_id: creator.id,
+      prize: "测试奖品",
+      winners_count: 3,
+      min_trust_level: 1,
+      max_trust_level: 3,
+    )
+  end
 end
