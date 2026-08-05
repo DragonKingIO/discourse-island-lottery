@@ -18,6 +18,10 @@ end
 
 require_relative "lib/discourse_island_lottery/engine"
 
+Discourse::Application.routes.append do
+  mount ::DiscourseIslandLottery::Engine, at: "/island-lottery"
+end
+
 after_initialize do
   require_relative "app/models/discourse_island_lottery/lottery"
   require_relative "lib/discourse_island_lottery/draw_service"
