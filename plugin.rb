@@ -3,7 +3,7 @@
 # name: discourse-island-lottery
 # about: Auditable reply-based lotteries for IsleBBS
 # meta_topic_id: 0
-# version: 0.2.1
+# version: 0.3.0
 # authors: IsleBBS
 # url: https://islabbs.com
 # required_version: 3.4.0

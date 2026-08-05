@@ -1,4 +1,4 @@
-import { click, visit } from "@ember/test-helpers";
+import { click, fillIn, visit } from "@ember/test-helpers";
 import { test } from "qunit";
 import { acceptance } from "discourse/tests/helpers/qunit-helpers";
 
@@ -21,7 +21,20 @@ acceptance("Island Lottery | composer toolbar", function (needs) {
     await click("[data-name='island-lottery']");
 
     assert
-      .dom(".island-lottery-composer-fields")
-      .exists("the lottery settings are displayed in the composer");
+      .dom(".island-lottery-composer-modal")
+      .exists("the native lottery settings modal is displayed");
+
+    await fillIn(
+      ".island-lottery-composer-modal textarea",
+      "一份小岛纪念品"
+    );
+    await click(".island-lottery-composer-apply");
+
+    assert.dom(".island-lottery-composer-modal").doesNotExist();
+    assert.true(this.container.lookup("service:composer").model.islandLotteryCreate);
+    assert.strictEqual(
+      this.container.lookup("service:composer").model.islandLotteryPrize,
+      "一份小岛纪念品"
+    );
   });
 });
