@@ -3,7 +3,7 @@
 require "rails_helper"
 
 RSpec.describe DiscourseIslandLottery::Lottery do
-  fab!(:creator) { Fabricate(:user) }
+  fab!(:creator, :user)
   fab!(:topic) { Fabricate(:topic, user: creator) }
 
   def build_lottery(overrides = {})

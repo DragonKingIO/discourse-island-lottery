@@ -3,8 +3,8 @@
 require "rails_helper"
 
 RSpec.describe DiscourseIslandLottery::LotteriesController do
-  fab!(:creator) { Fabricate(:user) }
-  fab!(:other_user) { Fabricate(:user) }
+  fab!(:creator, :user)
+  fab!(:other_user, :user)
   fab!(:topic) { Fabricate(:topic, user: creator) }
 
   before { SiteSetting.island_lottery_enabled = true }
