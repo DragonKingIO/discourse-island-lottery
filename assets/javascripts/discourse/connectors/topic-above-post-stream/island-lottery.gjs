@@ -1,25 +1,15 @@
 import Component from "@glimmer/component";
-import { action } from "@ember/object";
-import { service } from "@ember/service";
-import DButton from "discourse/ui-kit/d-button";
 import DRelativeDate from "discourse/ui-kit/d-relative-date";
 import { eq } from "discourse/truth-helpers";
 import { i18n } from "discourse-i18n";
-import IslandLotteryCreate from "../../components/modal/island-lottery-create";
 
 export default class IslandLotteryConnector extends Component {
-  @service modal;
-
   get topic() {
     return this.args.outletArgs.model;
   }
 
   get lottery() {
     return this.topic.island_lottery;
-  }
-
-  @action createLottery() {
-    this.modal.show(IslandLotteryCreate, { model: { topic: this.topic } });
   }
 
   <template>
@@ -63,15 +53,6 @@ export default class IslandLotteryConnector extends Component {
           <small>{{i18n "island_lottery.commitment"}}：{{this.lottery.seed_digest}}</small>
         {{/if}}
       </section>
-    {{else if this.topic.can_create_island_lottery}}
-      <div class="island-lottery-create-button">
-        <DButton
-          @action={{this.createLottery}}
-          @label="island_lottery.create"
-          @icon="gift"
-          class="btn-primary"
-        />
-      </div>
     {{/if}}
   </template>
 }
