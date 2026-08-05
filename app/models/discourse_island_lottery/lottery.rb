@@ -63,3 +63,32 @@ module DiscourseIslandLottery
     end
   end
 end
+
+# == Schema Information
+#
+# Table name: island_lotteries
+#
+#  id                   :bigint           not null, primary key
+#  closes_at            :datetime         not null
+#  drawn_at             :datetime
+#  max_trust_level      :integer          default(4), not null
+#  min_trust_level      :integer          default(0), not null
+#  participant_user_ids :jsonb            not null
+#  prize                :text
+#  seed                 :string           not null
+#  seed_digest          :string           not null
+#  status               :integer          default("open"), not null
+#  winner_user_ids      :jsonb            not null
+#  winners_count        :integer          not null
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
+#  creator_id           :bigint           not null
+#  result_post_id       :bigint
+#  topic_id             :bigint           not null
+#
+# Indexes
+#
+#  index_island_lotteries_on_creator_id            (creator_id)
+#  index_island_lotteries_on_status_and_closes_at  (status,closes_at)
+#  index_island_lotteries_on_topic_id              (topic_id) UNIQUE
+#
