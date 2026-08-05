@@ -13,6 +13,26 @@ Reply-based, auditable lotteries for Discourse.
 - Deleted, hidden and late replies are excluded.
 - A committed server seed produces deterministic winners and is revealed after drawing.
 - The scheduled draw is idempotent and posts the result in the original topic.
+- The first post stores the configuration as an editable `[island-lottery]` block. It is
+  rendered as a card in the post body, while the creator can edit it for one hour and
+  staff can edit an open lottery at any time.
+
+## Post marker
+
+The composer inserts a readable block into the first post:
+
+```text
+[island-lottery]
+prize: 一份小岛纪念品
+closes_at: 2026-08-06T12:00:00Z
+winners_count: 2
+min_trust_level: 0
+max_trust_level: 4
+[/island-lottery]
+```
+
+It is parsed as Discourse BBCode and replaced by the lottery card when reading the
+topic. The `修改抽奖信息` button updates both the lottery record and this block.
 
 ## CI
 

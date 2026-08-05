@@ -31,6 +31,9 @@ acceptance("Island Lottery | composer toolbar", function (needs) {
     await click(".island-lottery-composer-apply");
 
     assert.dom(".island-lottery-composer-modal").doesNotExist();
+    assert
+      .dom(".d-editor-input")
+      .hasValue(/\[island-lottery\][\s\S]*一份小岛纪念品[\s\S]*\[\/island-lottery\]/);
     assert.true(this.container.lookup("service:composer").model.islandLotteryCreate);
     assert.strictEqual(
       this.container.lookup("service:composer").model.islandLotteryPrize,

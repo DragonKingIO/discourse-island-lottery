@@ -34,4 +34,18 @@ RSpec.describe DiscourseIslandLottery::Lottery do
     build_lottery.save!
     expect(build_lottery).not_to be_valid
   end
+
+  it "lets the creator edit for one hour and staff edit while it is open" do
+    lottery = build_lottery
+    lottery.save!
+
+    expect(lottery.can_manage?(creator, now: lottery.created_at + 59.minutes)).to be(true)
+    expect(lottery.can_manage?(creator, now: lottery.created_at + 1.hour)).to be(false)
+    expect(lottery.can_manage?(Fabricate(:admin), now: lottery.created_at + 2.days)).to be(true)
+  end
+
+  it "does not allow edits after the lottery has been drawn" do
+    lottery = build_lottery(status: :drawn)
+    expect(lottery.can_manage?(creator)).to be(false)
+  end
 end

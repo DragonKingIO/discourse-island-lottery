@@ -34,10 +34,12 @@ export default {
         group: "insertions",
         icon: "gift",
         label: "island_lottery.composer_toolbar_create",
-        action: () => {
+        action: (toolbarEvent) => {
           const composer = composerService.model;
           if (composer) {
-            modal.show(IslandLotteryComposer, { model: { composer } });
+            modal.show(IslandLotteryComposer, {
+              model: { composer, toolbarEvent },
+            });
           }
         },
         condition: (composer) => composer.model?.action === CREATE_TOPIC,

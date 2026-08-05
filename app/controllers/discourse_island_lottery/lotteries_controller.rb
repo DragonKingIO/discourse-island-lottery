@@ -24,6 +24,16 @@ module DiscourseIslandLottery
       render_json_error(e.record.errors.full_messages, status: 422)
     end
 
+    def update
+      lottery = Lottery.find(params[:id])
+      raise Discourse::InvalidAccess unless lottery.can_manage?(current_user)
+
+      lottery = UpdateService.call(lottery:, actor: current_user, params:)
+      render json: { lottery: lottery.public_payload(guardian) }
+    rescue ActiveRecord::RecordInvalid => e
+      render_json_error(e.record.errors.full_messages, status: 422)
+    end
+
     def draw
       lottery = Lottery.find(params[:id])
       raise Discourse::InvalidAccess unless current_user.staff?

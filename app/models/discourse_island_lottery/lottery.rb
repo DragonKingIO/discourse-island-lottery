@@ -4,6 +4,8 @@ module DiscourseIslandLottery
   class Lottery < ActiveRecord::Base
     self.table_name = "island_lotteries"
 
+    EDITABLE_FIELDS = %i[prize closes_at winners_count min_trust_level max_trust_level].freeze
+
     belongs_to :topic
     belongs_to :creator, class_name: "User"
     belongs_to :result_post, class_name: "Post", optional: true
@@ -51,8 +53,11 @@ module DiscourseIslandLottery
       payload
     end
 
-    def can_manage?(user)
-      user.present? && (user.staff? || user.id == creator_id)
+    def can_manage?(user, now: Time.zone.now)
+      return false unless user.present? && open?
+      return true if user.staff?
+
+      user.id == creator_id && created_at.present? && created_at > 1.hour.ago(now)
     end
 
     private

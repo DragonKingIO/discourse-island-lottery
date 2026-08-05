@@ -4,3 +4,8 @@ zh_CN:
     island_lottery_min_close_minutes: "创建后最短开奖等待时间（分钟）"
     island_lottery_max_duration_days: "抽奖最长持续时间（天）"
     island_lottery_max_winners: "单次抽奖最多中奖人数"
+  island_lottery:
+    edit_reason: "更新抽奖信息"
+    errors:
+      edit_forbidden: "只有抽奖发起人创建后一小时内或管理员可以修改抽奖信息。"
+      invalid_marker: "抽奖代码中的时间、人数或信任等级设置无效。"

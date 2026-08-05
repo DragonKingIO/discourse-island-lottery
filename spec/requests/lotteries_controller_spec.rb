@@ -87,4 +87,89 @@ RSpec.describe DiscourseIslandLottery::LotteriesController do
       max_trust_level: 3,
     )
   end
+
+  it "creates a lottery from the marker in the first post" do
+    sign_in(creator)
+
+    post "/posts.json",
+         params: {
+           title: "正文抽奖标记",
+           raw: <<~RAW,
+             回复即可参与。
+
+             [island-lottery]
+             prize: 一份正文奖品
+             closes_at: #{2.days.from_now.iso8601}
+             winners_count: 2
+             min_trust_level: 0
+             max_trust_level: 4
+             [/island-lottery]
+           RAW
+           archetype: Archetype.default,
+         }
+
+    expect(response.status).to eq(200)
+    topic_id = response.parsed_body.dig("post", "topic_id") || response.parsed_body["topic_id"]
+    lottery = DiscourseIslandLottery::Lottery.find_by!(topic_id:)
+    expect(lottery.prize).to eq("一份正文奖品")
+    expect(Post.find_by!(topic_id:, post_number: 1).raw).to include("[island-lottery]")
+  end
+
+  it "lets the creator update the lottery and synchronizes the marker" do
+    lottery = DiscourseIslandLottery::Lottery.create!(
+      topic: topic,
+      creator: creator,
+      closes_at: 1.day.from_now,
+      winners_count: 1,
+      min_trust_level: 0,
+      max_trust_level: 4,
+      prize: "旧奖品",
+      seed: "test-seed",
+      seed_digest: Digest::SHA256.hexdigest("test-seed"),
+    )
+    sign_in(creator)
+
+    patch "/island-lottery/#{lottery.id}.json",
+          params: {
+            prize: "新奖品",
+            closes_at: 2.days.from_now.iso8601,
+            winners_count: 2,
+            min_trust_level: 1,
+            max_trust_level: 3,
+          }
+
+    expect(response.status).to eq(200)
+    expect(lottery.reload).to have_attributes(
+      prize: "新奖品",
+      winners_count: 2,
+      min_trust_level: 1,
+      max_trust_level: 3,
+    )
+    expect(topic.first_post.reload.raw).to include("prize: 新奖品", "winners_count: 2")
+  end
+
+  it "blocks the creator after one hour but keeps staff access" do
+    lottery = DiscourseIslandLottery::Lottery.create!(
+      topic: topic,
+      creator: creator,
+      created_at: 2.hours.ago,
+      updated_at: 2.hours.ago,
+      closes_at: 1.day.from_now,
+      winners_count: 1,
+      min_trust_level: 0,
+      max_trust_level: 4,
+      seed: "old-seed",
+      seed_digest: Digest::SHA256.hexdigest("old-seed"),
+    )
+
+    sign_in(creator)
+    patch "/island-lottery/#{lottery.id}.json", params: { prize: "不应生效" }
+    expect(response.status).to eq(403)
+    expect(lottery.reload.prize).not_to eq("不应生效")
+
+    sign_in(admin)
+    patch "/island-lottery/#{lottery.id}.json", params: { prize: "管理员修改" }
+    expect(response.status).to eq(200)
+    expect(lottery.reload.prize).to eq("管理员修改")
+  end
 end

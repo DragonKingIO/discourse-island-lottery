@@ -2,9 +2,14 @@ import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
 import { on } from "@ember/modifier";
 import { action } from "@ember/object";
+import { ajax } from "discourse/lib/ajax";
 import DButton from "discourse/ui-kit/d-button";
 import DModal from "discourse/ui-kit/d-modal";
 import { i18n } from "discourse-i18n";
+import {
+  buildIslandLotteryMarker,
+  parseIslandLotteryMarker,
+} from "../../../lib/island-lottery-marker";
 
 function localDateTime(value) {
   const date = value ? new Date(value) : new Date(Date.now() + 86400000);
@@ -18,29 +23,56 @@ export default class IslandLotteryComposer extends Component {
   @tracked winnersCount;
   @tracked minTrustLevel;
   @tracked maxTrustLevel;
+  @tracked isSaving = false;
+  @tracked errorMessage;
 
   constructor() {
     super(...arguments);
-    const composer = this.args.model.composer;
-    this.prize = composer.islandLotteryPrize || "";
-    this.closesAt = localDateTime(composer.islandLotteryClosesAt);
-    this.winnersCount = composer.islandLotteryWinnersCount || 1;
-    this.minTrustLevel = composer.islandLotteryMinTrustLevel ?? 0;
-    this.maxTrustLevel = composer.islandLotteryMaxTrustLevel ?? 4;
+    const model = this.args.model;
+    const composer = model.composer;
+    const lottery = model.lottery;
+    const marker = model.toolbarEvent
+      ? parseIslandLotteryMarker(model.toolbarEvent.getText())
+      : null;
+
+    this.prize = lottery?.prize || composer?.islandLotteryPrize || marker?.prize || "";
+    this.closesAt = localDateTime(
+      lottery?.closes_at || composer?.islandLotteryClosesAt || marker?.closes_at
+    );
+    this.winnersCount =
+      lottery?.winners_count || composer?.islandLotteryWinnersCount || marker?.winners_count || 1;
+    this.minTrustLevel =
+      lottery?.min_trust_level ?? composer?.islandLotteryMinTrustLevel ?? marker?.min_trust_level ?? 0;
+    this.maxTrustLevel =
+      lottery?.max_trust_level ?? composer?.islandLotteryMaxTrustLevel ?? marker?.max_trust_level ?? 4;
   }
 
   get composer() {
     return this.args.model.composer;
   }
 
+  get lottery() {
+    return this.args.model.lottery;
+  }
+
+  get editing() {
+    return Boolean(this.lottery);
+  }
+
   get configured() {
-    return Boolean(this.composer.islandLotteryCreate);
+    return Boolean(this.composer?.islandLotteryCreate);
+  }
+
+  get submitDisabled() {
+    return this.invalid || this.isSaving;
   }
 
   get invalid() {
     return (
       !this.closesAt ||
-      this.winnersCount < 1 ||
+      Number(this.winnersCount) < 1 ||
+      Number(this.minTrustLevel) < 0 ||
+      Number(this.maxTrustLevel) > 4 ||
       Number(this.minTrustLevel) > Number(this.maxTrustLevel)
     );
   }
@@ -65,32 +97,88 @@ export default class IslandLotteryComposer extends Component {
     this.maxTrustLevel = Number(event.target.value);
   }
 
-  @action applyLottery() {
+  @action async applyLottery() {
     if (this.invalid) {
       return;
     }
 
-    this.composer.setProperties({
+    const closesAt = new Date(this.closesAt).toISOString();
+
+    if (this.editing) {
+      this.isSaving = true;
+      this.errorMessage = null;
+
+      try {
+        const result = await ajax(`/island-lottery/${this.lottery.id}.json`, {
+          type: "PATCH",
+          data: {
+            prize: this.prize,
+            closes_at: closesAt,
+            winners_count: this.winnersCount,
+            min_trust_level: this.minTrustLevel,
+            max_trust_level: this.maxTrustLevel,
+          },
+        });
+        this.args.model.onSaved?.(result.lottery);
+        this.args.closeModal();
+      } catch (error) {
+        this.errorMessage =
+          error?.jqXHR?.responseJSON?.errors?.join(" ") ||
+          i18n("island_lottery.save_failed");
+      } finally {
+        this.isSaving = false;
+      }
+      return;
+    }
+
+    this.composer?.setProperties({
       islandLotteryCreate: true,
       islandLotteryPrize: this.prize,
-      islandLotteryClosesAt: new Date(this.closesAt).toISOString(),
+      islandLotteryClosesAt: closesAt,
       islandLotteryWinnersCount: this.winnersCount,
       islandLotteryMinTrustLevel: this.minTrustLevel,
       islandLotteryMaxTrustLevel: this.maxTrustLevel,
     });
-    this.composer.notifyPropertyChange("action");
+    this.composer?.notifyPropertyChange("action");
+
+    const toolbarEvent = this.args.model.toolbarEvent;
+    if (toolbarEvent) {
+      const marker = buildIslandLotteryMarker({
+        prize: this.prize,
+        closesAt,
+        winnersCount: this.winnersCount,
+        minTrustLevel: this.minTrustLevel,
+        maxTrustLevel: this.maxTrustLevel,
+      });
+      const existingMarker = parseIslandLotteryMarker(toolbarEvent.getText());
+
+      if (existingMarker?.raw) {
+        toolbarEvent.replaceText(existingMarker.raw, marker);
+      } else {
+        toolbarEvent.addText(`\n${marker}\n`);
+      }
+    }
+
     this.args.closeModal();
   }
 
   @action removeLottery() {
-    this.composer.set("islandLotteryCreate", false);
-    this.composer.notifyPropertyChange("action");
+    const toolbarEvent = this.args.model.toolbarEvent;
+    const existingMarker = toolbarEvent
+      ? parseIslandLotteryMarker(toolbarEvent.getText())
+      : null;
+    if (existingMarker?.raw) {
+      toolbarEvent.replaceText(existingMarker.raw, "");
+    }
+
+    this.composer?.set("islandLotteryCreate", false);
+    this.composer?.notifyPropertyChange("action");
     this.args.closeModal();
   }
 
   <template>
     <DModal
-      @title={{i18n "island_lottery.composer_modal_title"}}
+      @title={{if this.editing (i18n "island_lottery.edit_modal_title") (i18n "island_lottery.composer_modal_title")}}
       @closeModal={{@closeModal}}
     >
       <:body>
@@ -145,17 +233,21 @@ export default class IslandLotteryComposer extends Component {
           </div>
 
           <p class="island-lottery-form__help">{{i18n "island_lottery.duplicate_notice"}}</p>
+          {{#if this.errorMessage}}
+            <p class="island-lottery-form__error">{{this.errorMessage}}</p>
+          {{/if}}
         </form>
       </:body>
       <:footer>
         <DButton
           @action={{this.applyLottery}}
-          @label="island_lottery.composer_apply"
+          @label={{if this.editing "island_lottery.save_edit" "island_lottery.composer_apply"}}
           @icon="gift"
-          @disabled={{this.invalid}}
+          @disabled={{this.submitDisabled}}
+          @isLoading={{this.isSaving}}
           class="btn-primary island-lottery-composer-apply"
         />
-        {{#if this.configured}}
+        {{#if (and this.configured (not this.editing))}}
           <DButton
             @action={{this.removeLottery}}
             @label="island_lottery.composer_remove"
