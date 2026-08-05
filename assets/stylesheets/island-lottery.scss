@@ -1,28 +1,21 @@
 .island-lottery-embed {
+  clear: both;
   margin: 1.5rem 0;
 }
 
 .island-lottery-card {
   --island-lottery-accent: var(--tertiary);
-  --island-lottery-accent-soft: var(--tertiary-very-low);
   position: relative;
   overflow: hidden;
   margin: 0;
-  padding: 1.25rem;
+  padding: clamp(1rem, 2.5vw, 1.5rem);
   border: 1px solid var(--primary-low-mid);
-  border-radius: 0.85rem;
-  background: linear-gradient(135deg, var(--island-lottery-accent-soft), var(--secondary));
-  box-shadow: 0 0.5rem 1.6rem rgb(0 0 0 / 7%);
+  border-inline-start: 4px solid var(--island-lottery-accent);
+  border-radius: 0.75rem;
+  background: var(--secondary);
+  box-shadow: 0 0.35rem 1.25rem rgb(0 0 0 / 5%);
 
-  &::before {
-    position: absolute;
-    inset: 0 auto 0 0;
-    width: 0.3rem;
-    background: var(--island-lottery-accent);
-    content: "";
-  }
-
-  &__hero,
+  &__header,
   &__identity,
   &__footer,
   &__result-heading {
@@ -30,7 +23,7 @@
     align-items: center;
   }
 
-  &__hero,
+  &__header,
   &__footer,
   &__result-heading {
     justify-content: space-between;
@@ -38,18 +31,18 @@
   }
 
   &__identity {
-    gap: 0.8rem;
+    gap: 0.75rem;
   }
 
   &__icon {
     display: grid;
-    width: 2.6rem;
-    height: 2.6rem;
+    width: 2.75rem;
+    height: 2.75rem;
     place-items: center;
-    border-radius: 0.75rem;
+    border-radius: 50%;
     color: var(--secondary);
     background: var(--island-lottery-accent);
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
 
   &__eyebrow,
@@ -60,8 +53,9 @@
   }
 
   &__eyebrow {
-    margin-bottom: 0.15rem;
-    letter-spacing: 0.06em;
+    margin-bottom: 0.1rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
   }
 
   h3 {
@@ -71,23 +65,28 @@
   }
 
   &__status {
-    padding: 0.3rem 0.65rem;
+    flex: 0 0 auto;
+    padding: 0.3rem 0.7rem;
     border-radius: 999px;
     color: var(--island-lottery-accent);
-    background: var(--secondary);
+    background: var(--tertiary-very-low);
     font-size: var(--font-down-1);
     font-weight: 700;
     white-space: nowrap;
   }
 
+  &__prize,
+  &__countdown {
+    border: 1px solid var(--primary-low);
+    border-radius: 0.6rem;
+  }
+
   &__prize {
     display: grid;
     gap: 0.35rem;
-    margin: 1.25rem 0;
-    padding: 0.95rem 1rem;
-    border: 1px solid var(--primary-low);
-    border-radius: 0.65rem;
-    background: var(--secondary);
+    margin: 1.25rem 0 0;
+    padding: 1rem;
+    background: var(--primary-very-low);
 
     strong {
       color: var(--primary);
@@ -96,24 +95,62 @@
     }
   }
 
+  &__countdown {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding: 0.9rem 1rem;
+    border-color: var(--tertiary-low);
+    background: var(--tertiary-very-low);
+
+    strong {
+      display: block;
+      margin-top: 0.2rem;
+      color: var(--primary);
+      font-size: var(--font-up-1);
+    }
+  }
+
+  &__countdown-value {
+    color: var(--tertiary);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: var(--font-up-2);
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
   &__stats {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 0.7rem;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.6rem;
+    margin-top: 1rem;
   }
 
   &__stat {
     display: grid;
     gap: 0.35rem;
     min-width: 0;
-    padding: 0.7rem 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--primary-low);
     border-radius: 0.55rem;
-    background: color-mix(in srgb, var(--secondary) 72%, transparent);
+    background: var(--secondary);
 
     strong {
       overflow: hidden;
       color: var(--primary);
       font-size: var(--font-down-1);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    small {
+      overflow: hidden;
+      color: var(--primary-medium);
+      font-size: var(--font-down-2);
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -134,23 +171,30 @@
     }
   }
 
+  &__rules {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--primary-low);
+    color: var(--primary-medium);
+    font-size: var(--font-down-1);
+
+    strong {
+      color: var(--primary);
+    }
+
+    ul {
+      display: grid;
+      gap: 0.25rem;
+      margin: 0.5rem 0 0;
+      padding-left: 1.25rem;
+    }
+  }
+
   &__footer {
     align-items: flex-end;
     margin-top: 1rem;
     color: var(--primary-medium);
     font-size: var(--font-down-2);
-  }
-
-  &__commitment {
-    min-width: 0;
-
-    code {
-      display: inline-block;
-      max-width: min(34rem, 65vw);
-      overflow: hidden;
-      vertical-align: bottom;
-      text-overflow: ellipsis;
-    }
   }
 
   &__edit {
@@ -236,7 +280,21 @@
 
 @media (max-width: 600px) {
   .island-lottery-card__stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .island-lottery-card__countdown {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .island-lottery-card__countdown-value {
+    font-size: var(--font-up-1);
+  }
+
+  .island-lottery-card__header {
+    align-items: flex-start;
   }
 
   .island-lottery-card__footer {
