@@ -18,11 +18,11 @@ end
 
 require_relative "lib/discourse_island_lottery/engine"
 
-Discourse::Application.routes.append do
-  mount ::DiscourseIslandLottery::Engine, at: "/island-lottery"
-end
-
 after_initialize do
+  Discourse::Application.routes.append do
+    mount ::DiscourseIslandLottery::Engine, at: "/island-lottery"
+  end
+
   require_relative "app/models/discourse_island_lottery/lottery"
   require_relative "lib/discourse_island_lottery/draw_service"
   require_relative "jobs/regular/island_lottery_draw"
