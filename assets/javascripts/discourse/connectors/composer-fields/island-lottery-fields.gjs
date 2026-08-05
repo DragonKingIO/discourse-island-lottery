@@ -6,7 +6,7 @@ import { i18n } from "discourse-i18n";
 
 export default class IslandLotteryFields extends Component {
   static shouldRender(args) {
-    return args.model?.action === CREATE_TOPIC && args.model.islandLotteryCreate;
+    return args.model?.action === CREATE_TOPIC;
   }
 
   get composer() {
@@ -49,7 +49,8 @@ export default class IslandLotteryFields extends Component {
   }
 
   <template>
-    <fieldset class="island-lottery-composer-fields">
+    {{#if this.composer.islandLotteryCreate}}
+      <fieldset class="island-lottery-composer-fields">
       <legend>🎁 {{i18n "island_lottery.composer_fields_title"}}</legend>
 
       <label>
@@ -114,6 +115,7 @@ export default class IslandLotteryFields extends Component {
       </div>
 
       <p>{{i18n "island_lottery.duplicate_notice"}}</p>
-    </fieldset>
+      </fieldset>
+    {{/if}}
   </template>
 }
