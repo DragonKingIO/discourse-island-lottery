@@ -5,6 +5,7 @@ require "rails_helper"
 RSpec.describe DiscourseIslandLottery::LotteriesController do
   fab!(:creator, :user)
   fab!(:other_user, :user)
+  fab!(:admin)
   fab!(:topic) { Fabricate(:topic, user: creator) }
 
   before { SiteSetting.island_lottery_enabled = true }
@@ -60,7 +61,7 @@ RSpec.describe DiscourseIslandLottery::LotteriesController do
   end
 
   it "creates a lottery together with a new topic from composer parameters" do
-    sign_in(creator)
+    sign_in(admin)
 
     post "/posts.json",
          params: {
@@ -79,7 +80,7 @@ RSpec.describe DiscourseIslandLottery::LotteriesController do
     topic_id = response.parsed_body.dig("post", "topic_id") || response.parsed_body["topic_id"]
     lottery = DiscourseIslandLottery::Lottery.find_by!(topic_id:)
     expect(lottery).to have_attributes(
-      creator_id: creator.id,
+      creator_id: admin.id,
       prize: "测试奖品",
       winners_count: 3,
       min_trust_level: 1,
