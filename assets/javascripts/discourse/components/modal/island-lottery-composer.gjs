@@ -67,6 +67,10 @@ export default class IslandLotteryComposer extends Component {
     return this.invalid || this.isSaving;
   }
 
+  get showRemoveButton() {
+    return this.configured && !this.editing;
+  }
+
   get invalid() {
     return (
       !this.closesAt ||
@@ -247,7 +251,7 @@ export default class IslandLotteryComposer extends Component {
           @isLoading={{this.isSaving}}
           class="btn-primary island-lottery-composer-apply"
         />
-        {{#if (and this.configured (not this.editing))}}
+        {{#if this.showRemoveButton}}
           <DButton
             @action={{this.removeLottery}}
             @label="island_lottery.composer_remove"
