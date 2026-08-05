@@ -4,201 +4,333 @@
 }
 
 .island-lottery-card {
-  --island-lottery-accent: var(--tertiary);
+  --island-lottery-card-bg: #111d27;
+  --island-lottery-surface: #172631;
+  --island-lottery-border: #2a3d4a;
+  --island-lottery-text: #e6edf2;
+  --island-lottery-muted: #8da3b4;
+  --island-lottery-teal: #2bb8c8;
+  --island-lottery-gold: #d5a354;
   position: relative;
   overflow: hidden;
   margin: 0;
-  padding: clamp(1rem, 2.5vw, 1.5rem);
-  border: 1px solid var(--primary-low-mid);
-  border-inline-start: 4px solid var(--island-lottery-accent);
-  border-radius: 0.75rem;
-  background: var(--secondary);
-  box-shadow: 0 0.35rem 1.25rem rgb(0 0 0 / 5%);
+  padding: clamp(1rem, 2.5vw, 1.35rem) clamp(1rem, 3vw, 1.5rem) 1rem;
+  border: 1px solid var(--island-lottery-border);
+  border-radius: 0.9rem;
+  color: var(--island-lottery-text);
+  background: var(--island-lottery-card-bg);
+  box-shadow: 0 0.75rem 2rem rgb(0 0 0 / 16%);
+
+  &::before {
+    position: absolute;
+    top: 0;
+    left: clamp(1rem, 3vw, 1.5rem);
+    width: 3.75rem;
+    height: 2px;
+    background: var(--island-lottery-gold);
+    content: "";
+  }
 
   &__header,
   &__identity,
-  &__footer,
+  &__header-actions,
+  &__status,
+  &__details,
+  &__rules-summary,
   &__result-heading {
     display: flex;
     align-items: center;
   }
 
   &__header,
-  &__footer,
+  &__details,
+  &__rules-summary,
   &__result-heading {
     justify-content: space-between;
     gap: 1rem;
   }
 
+  &__header {
+    min-height: 2.5rem;
+  }
+
   &__identity {
-    gap: 0.75rem;
+    min-width: 0;
+    gap: 0.7rem;
   }
 
   &__icon {
     display: grid;
-    width: 2.75rem;
-    height: 2.75rem;
+    flex: 0 0 auto;
+    width: 2.45rem;
+    height: 2.45rem;
     place-items: center;
-    border-radius: 50%;
-    color: var(--secondary);
-    background: var(--island-lottery-accent);
+    border: 1px solid rgb(213 163 84 / 35%);
+    border-radius: 0.65rem;
+    color: var(--island-lottery-gold);
+    background: var(--island-lottery-surface);
     font-size: 1.1rem;
   }
 
-  &__eyebrow,
   &__label {
     display: block;
-    color: var(--primary-medium);
+    color: var(--island-lottery-muted);
     font-size: var(--font-down-1);
-  }
-
-  &__eyebrow {
-    margin-bottom: 0.1rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
   }
 
   h3 {
     margin: 0;
-    color: var(--primary);
+    overflow: hidden;
+    color: var(--island-lottery-text);
     font-size: var(--font-up-1);
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__header-actions {
+    flex: 0 0 auto;
+    gap: 0.45rem;
   }
 
   &__status {
-    flex: 0 0 auto;
-    padding: 0.3rem 0.7rem;
-    border-radius: 999px;
-    color: var(--island-lottery-accent);
-    background: var(--tertiary-very-low);
+    gap: 0.35rem;
+    color: var(--island-lottery-teal);
     font-size: var(--font-down-1);
     font-weight: 700;
     white-space: nowrap;
   }
 
-  &__prize,
-  &__countdown {
-    border: 1px solid var(--primary-low);
-    border-radius: 0.6rem;
+  &__status-dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: currentcolor;
+    box-shadow: 0 0 0 3px rgb(43 184 200 / 12%);
+  }
+
+  &__status time {
+    color: var(--island-lottery-teal);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.025em;
+  }
+
+  &__edit {
+    flex: 0 0 auto;
+    min-height: 0;
+    padding: 0.25rem;
+    color: var(--island-lottery-muted);
+    font-size: var(--font-down-2);
+
+    &:hover {
+      color: var(--island-lottery-text);
+      background: transparent;
+    }
   }
 
   &__prize {
     display: grid;
-    gap: 0.35rem;
-    margin: 1.25rem 0 0;
-    padding: 1rem;
-    background: var(--primary-very-low);
+    gap: 0.3rem;
+    margin: 1.35rem 0 0;
+    padding: 0.25rem 0.15rem 1rem;
 
     strong {
-      color: var(--primary);
-      font-size: var(--font-up-1);
+      color: var(--island-lottery-text);
+      font-size: clamp(1.5rem, 4vw, 1.75rem);
+      font-weight: 700;
+      line-height: 1.25;
       white-space: pre-wrap;
     }
   }
 
-  &__countdown {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    margin-top: 1rem;
-    padding: 0.9rem 1rem;
-    border-color: var(--tertiary-low);
-    background: var(--tertiary-very-low);
-
-    strong {
-      display: block;
-      margin-top: 0.2rem;
-      color: var(--primary);
-      font-size: var(--font-up-1);
-    }
+  &__prize-note {
+    color: var(--island-lottery-muted);
+    font-size: var(--font-down-1);
   }
 
-  &__countdown-value {
-    color: var(--tertiary);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    font-size: var(--font-up-2);
-    font-variant-numeric: tabular-nums;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
+  &__details {
+    margin-top: 0.1rem;
+    padding: 0.85rem 0.15rem;
+    border-top: 1px solid var(--island-lottery-border);
+    border-bottom: 1px solid var(--island-lottery-border);
   }
 
-  &__stats {
+  &__detail {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 0.6rem;
-    margin-top: 1rem;
-  }
-
-  &__stat {
-    display: grid;
-    gap: 0.35rem;
     min-width: 0;
-    padding: 0.75rem;
-    border: 1px solid var(--primary-low);
-    border-radius: 0.55rem;
-    background: var(--secondary);
+    gap: 0.25rem;
 
     strong {
       overflow: hidden;
-      color: var(--primary);
+      color: var(--island-lottery-text);
       font-size: var(--font-down-1);
+      font-weight: 600;
       text-overflow: ellipsis;
       white-space: nowrap;
+    }
+  }
+
+  &__detail:last-child {
+    text-align: right;
+  }
+
+  &__join {
+    width: 100%;
+    min-height: 2.75rem;
+    margin-top: 1rem;
+    border: 0;
+    border-radius: 0.55rem;
+    color: #0b2029;
+    background: var(--island-lottery-teal);
+    font-size: var(--font-0);
+    font-weight: 700;
+    box-shadow: none;
+
+    &:hover:not(:disabled),
+    &:focus-visible:not(:disabled) {
+      color: #07171d;
+      background: #48c8d5;
+      box-shadow: 0 0.35rem 1rem rgb(43 184 200 / 20%);
     }
 
-    small {
-      overflow: hidden;
-      color: var(--primary-medium);
-      font-size: var(--font-down-2);
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    &:disabled {
+      border: 1px solid rgb(43 184 200 / 45%);
+      color: var(--island-lottery-teal);
+      background: transparent;
+      opacity: 1;
     }
+  }
+
+  &__notice {
+    margin-top: 1rem;
+    color: var(--island-lottery-muted);
+    font-size: var(--font-down-1);
+  }
+
+  &__rules {
+    margin-top: 0.85rem;
+    color: var(--island-lottery-muted);
+    font-size: var(--font-down-1);
+
+    strong {
+      color: var(--island-lottery-text);
+    }
+  }
+
+  &__rules-summary {
+    gap: 0.75rem;
+
+    > span {
+      min-width: 0;
+    }
+
+    strong {
+      margin-left: 0.25rem;
+      font-weight: 700;
+    }
+  }
+
+  &__rules-toggle {
+    flex: 0 0 auto;
+    min-height: 0;
+    padding: 0.2rem 0;
+    color: var(--island-lottery-teal);
+    font-size: var(--font-down-1);
+
+    &:hover {
+      color: #48c8d5;
+      background: transparent;
+    }
+  }
+
+  &__rules ul {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0.55rem 0 0;
+    padding-left: 1.25rem;
+    color: var(--island-lottery-muted);
   }
 
   &__result {
     margin-top: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid var(--primary-low);
-
-    ol {
-      margin: 0.65rem 0 0;
-      padding-left: 1.4rem;
-    }
+    border-top: 1px solid var(--island-lottery-border);
 
     p {
       margin: 0.65rem 0 0;
+      color: var(--island-lottery-muted);
     }
   }
 
-  &__rules {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--primary-low);
-    color: var(--primary-medium);
-    font-size: var(--font-down-1);
-
-    strong {
-      color: var(--primary);
-    }
-
-    ul {
-      display: grid;
-      gap: 0.25rem;
-      margin: 0.5rem 0 0;
-      padding-left: 1.25rem;
-    }
-  }
-
-  &__footer {
+  &__result-heading {
     align-items: flex-end;
-    margin-top: 1rem;
-    color: var(--primary-medium);
-    font-size: var(--font-down-2);
+
+    > span:last-child {
+      color: var(--island-lottery-muted);
+      font-size: var(--font-down-1);
+      text-align: right;
+    }
   }
 
-  &__edit {
-    flex: 0 0 auto;
+  &__winner-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+
+  &__winner {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.55rem 0.3rem 0.35rem;
+    border: 1px solid var(--island-lottery-border);
+    border-radius: 999px;
+    color: var(--island-lottery-text);
+    background: var(--island-lottery-surface);
+
+    .avatar {
+      width: 1.35rem;
+      height: 1.35rem;
+    }
+
+    &:hover {
+      border-color: var(--island-lottery-teal);
+      color: var(--island-lottery-text);
+    }
+  }
+
+  @media (max-width: 600px) {
+    &__header {
+      align-items: flex-start;
+    }
+
+    &__header-actions {
+      align-items: flex-end;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    &__details {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    &__detail:last-child {
+      text-align: left;
+    }
+
+    &__result-heading {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 0.3rem;
+
+      > span:last-child {
+        text-align: left;
+      }
+    }
   }
 }
 
@@ -279,29 +411,6 @@
 }
 
 @media (max-width: 600px) {
-  .island-lottery-card__stats {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .island-lottery-card__countdown {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .island-lottery-card__countdown-value {
-    font-size: var(--font-up-1);
-  }
-
-  .island-lottery-card__header {
-    align-items: flex-start;
-  }
-
-  .island-lottery-card__footer {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
   .island-lottery-form__levels {
     grid-template-columns: 1fr;
   }

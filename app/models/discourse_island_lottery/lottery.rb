@@ -24,11 +24,27 @@ module DiscourseIslandLottery
           users = User.where(id: winner_user_ids).index_by(&:id)
           winner_user_ids.filter_map do |user_id|
             user = users[user_id]
-            user && { id: user.id, username: user.username, name: user.name }
+            user &&
+              {
+                id: user.id,
+                username: user.username,
+                name: user.name,
+                avatar_template: user.avatar_template,
+              }
           end
         else
           []
         end
+
+      participant_ids =
+        if drawn?
+          Array(participant_user_ids)
+        elsif open?
+          live_participant_user_ids
+        else
+          []
+        end
+      current_user_id = guardian.user&.id
 
       payload = {
         id: id,
@@ -41,7 +57,8 @@ module DiscourseIslandLottery
         status: status,
         prize: prize,
         seed_digest: seed_digest,
-        participant_count: participant_user_ids.length,
+        participant_count: participant_ids.length,
+        current_user_participated: !!(current_user_id && participant_ids.include?(current_user_id)),
         winner_user_ids: drawn? ? winner_user_ids : [],
         winner_users: winner_users,
         drawn_at: drawn_at,
@@ -61,6 +78,29 @@ module DiscourseIslandLottery
     end
 
     private
+
+    def live_participant_user_ids(now: Time.zone.now)
+      reply_user_ids =
+        Post
+          .where(topic_id: topic_id, post_type: Post.types[:regular])
+          .where("post_number > 1 AND created_at <= ?", [closes_at, now].min)
+          .where(deleted_at: nil, hidden: false)
+          .where.not(user_id: nil)
+          .distinct
+          .pluck(:user_id)
+
+      User
+        .where(id: reply_user_ids, active: true, staged: false)
+        .where(trust_level: min_trust_level..max_trust_level)
+        .where("suspended_till IS NULL OR suspended_till < ?", now)
+        .where.not(id: excluded_user_ids)
+        .order(:id)
+        .pluck(:id)
+    end
+
+    def excluded_user_ids
+      [topic.user_id, Discourse::SYSTEM_USER_ID].compact.uniq
+    end
 
     def valid_trust_level_range
       return if min_trust_level.nil? || max_trust_level.nil?

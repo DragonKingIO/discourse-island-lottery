@@ -25,6 +25,19 @@ RSpec.describe DiscourseIslandLottery::Lottery do
     expect(build_lottery).to be_valid
   end
 
+  it "reports unique live participants and the current user's participation" do
+    participant = Fabricate(:user, trust_level: 1)
+    Fabricate(:post, topic: topic, user: participant)
+    Fabricate(:post, topic: topic, user: participant)
+    lottery = build_lottery
+    lottery.save!
+
+    payload = lottery.public_payload(Guardian.new(participant))
+
+    expect(payload[:participant_count]).to eq(1)
+    expect(payload[:current_user_participated]).to be(true)
+  end
+
   it "rejects an inverted trust-level range" do
     lottery = build_lottery(min_trust_level: 3, max_trust_level: 1)
     expect(lottery).not_to be_valid

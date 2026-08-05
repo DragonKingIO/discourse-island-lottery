@@ -1,18 +1,24 @@
 import Component from "@glimmer/component";
+import { getOwner } from "@ember/owner";
 import { registerDestructor } from "@ember/destroyable";
 import { action } from "@ember/object";
 import { later, cancel } from "@ember/runloop";
 import { service } from "@ember/service";
 import { tracked } from "@glimmer/tracking";
+import Composer from "discourse/models/composer";
 import DButton from "discourse/ui-kit/d-button";
 import DRelativeDate from "discourse/ui-kit/d-relative-date";
+import dAvatar from "discourse/ui-kit/helpers/d-avatar";
 import dIcon from "discourse/ui-kit/helpers/d-icon";
 import { i18n } from "discourse-i18n";
 import IslandLotteryComposer from "./modal/island-lottery-composer";
 
 export default class IslandLotteryCard extends Component {
+  @service composer;
+  @service currentUser;
   @service modal;
   @tracked now = Date.now();
+  @tracked rulesExpanded = false;
 
   constructor(...args) {
     super(...args);
@@ -75,6 +81,10 @@ export default class IslandLotteryCard extends Component {
     return Math.max(0, Math.floor((this.closesAtMs - this.now) / 1000));
   }
 
+  get hasCountdown() {
+    return this.isOpen && this.countdownSeconds > 0;
+  }
+
   get countdownValue() {
     const totalSeconds = this.countdownSeconds;
     const days = Math.floor(totalSeconds / 86400);
@@ -90,30 +100,58 @@ export default class IslandLotteryCard extends Component {
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
   }
 
-  get countdownLabel() {
-    return this.countdownSeconds > 0
-      ? i18n("island_lottery.countdown_remaining", { time: this.countdownValue })
-      : i18n("island_lottery.countdown_finished");
-  }
-
   get closesAtText() {
     if (this.closesAtMs === null) {
       return "";
     }
 
-    return new Date(this.closesAtMs).toLocaleString();
+    return new Intl.DateTimeFormat(undefined, {
+      month: "numeric",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(this.closesAtMs));
   }
 
   get participationCountLabel() {
     return this.isDrawn
-      ? i18n("island_lottery.participant_count", {
+      ? i18n("island_lottery.final_participant_count", {
           count: this.lottery.participant_count,
         })
-      : i18n("island_lottery.participant_count_pending");
+      : i18n("island_lottery.current_participant_count", {
+          count: this.lottery.participant_count,
+        });
+  }
+
+  get currentUserParticipated() {
+    return Boolean(this.lottery?.current_user_participated);
   }
 
   get canEdit() {
     return this.lottery?.can_manage;
+  }
+
+  @action joinLottery() {
+    if (!this.currentUser) {
+      getOwner(this).lookup("route:application").send("showLogin");
+      return;
+    }
+
+    const topic = this.post?.topic;
+    if (!topic || topic.details?.can_create_post === false) {
+      return;
+    }
+
+    this.composer.open({
+      action: Composer.REPLY,
+      topic,
+      draftKey: topic.draft_key,
+      draftSequence: topic.draft_sequence,
+    });
+  }
+
+  @action toggleRules() {
+    this.rulesExpanded = !this.rulesExpanded;
   }
 
   @action editLottery() {
@@ -133,48 +171,52 @@ export default class IslandLotteryCard extends Component {
         <div class="island-lottery-card__header">
           <div class="island-lottery-card__identity">
             <span class="island-lottery-card__icon" aria-hidden="true">{{dIcon "gift"}}</span>
-            <div>
-              <span class="island-lottery-card__eyebrow">{{i18n "island_lottery.event_label"}}</span>
-              <h3>{{i18n "island_lottery.title"}}</h3>
-            </div>
+            <h3>{{i18n "island_lottery.title"}}</h3>
           </div>
-          <span class="island-lottery-card__status">{{this.statusLabel}}</span>
+          <div class="island-lottery-card__header-actions">
+            <span class="island-lottery-card__status">
+              <span class="island-lottery-card__status-dot" aria-hidden="true"></span>
+              <span>{{this.statusLabel}}</span>
+              {{#if this.hasCountdown}}
+                <span aria-hidden="true">·</span>
+                <time
+                  datetime={{this.lottery.closes_at}}
+                  aria-label={{i18n "island_lottery.countdown_remaining" time=this.countdownValue}}
+                >{{this.countdownValue}}</time>
+              {{/if}}
+            </span>
+            {{#if this.canEdit}}
+              <DButton
+                @action={{this.editLottery}}
+                @label="island_lottery.edit"
+                @icon="pencil"
+                class="btn-flat island-lottery-card__edit"
+              />
+            {{/if}}
+          </div>
         </div>
 
         {{#if this.lottery.prize}}
           <div class="island-lottery-card__prize">
             <span class="island-lottery-card__label">{{i18n "island_lottery.prize_label"}}</span>
             <strong>{{this.lottery.prize}}</strong>
+            <span class="island-lottery-card__prize-note">
+              {{i18n "island_lottery.draw_winners" count=this.lottery.winners_count}}
+            </span>
           </div>
         {{/if}}
 
-        {{#if this.isOpen}}
-          <div class="island-lottery-card__countdown">
-            <div>
-              <span class="island-lottery-card__label">{{i18n "island_lottery.countdown_label"}}</span>
-              <strong>{{this.countdownLabel}}</strong>
-            </div>
-            <span class="island-lottery-card__countdown-value">{{this.countdownValue}}</span>
-          </div>
-        {{/if}}
-
-        <div class="island-lottery-card__stats">
-          <div class="island-lottery-card__stat">
+        <div class="island-lottery-card__details">
+          <div class="island-lottery-card__detail">
             <span class="island-lottery-card__label">{{i18n "island_lottery.closes_at"}}</span>
-            <strong><DRelativeDate @date={{this.lottery.closes_at}} /></strong>
-            <small>{{this.closesAtText}}</small>
+            <strong>
+              <time datetime={{this.lottery.closes_at}}>{{this.closesAtText}}</time>
+              {{i18n "island_lottery.draw_at_suffix"}}
+            </strong>
           </div>
-          <div class="island-lottery-card__stat">
-            <span class="island-lottery-card__label">{{i18n "island_lottery.winners_count"}}</span>
-            <strong>{{this.lottery.winners_count}} {{i18n "island_lottery.people"}}</strong>
-          </div>
-          <div class="island-lottery-card__stat">
+          <div class="island-lottery-card__detail">
             <span class="island-lottery-card__label">{{i18n "island_lottery.participant_count_label"}}</span>
             <strong>{{this.participationCountLabel}}</strong>
-          </div>
-          <div class="island-lottery-card__stat">
-            <span class="island-lottery-card__label">{{i18n "island_lottery.eligibility_label"}}</span>
-            <strong>TL{{this.lottery.min_trust_level}}～TL{{this.lottery.max_trust_level}}</strong>
           </div>
         </div>
 
@@ -182,45 +224,58 @@ export default class IslandLotteryCard extends Component {
           <div class="island-lottery-card__result">
             <div class="island-lottery-card__result-heading">
               <span class="island-lottery-card__label">{{i18n "island_lottery.winners"}}</span>
-              <span>{{i18n "island_lottery.result_summary" count=this.lottery.participant_count}}</span>
+              <span>{{this.participationCountLabel}}</span>
             </div>
             {{#if this.lottery.winner_users.length}}
-              <ol>
+              <div class="island-lottery-card__winner-list">
                 {{#each this.lottery.winner_users as |winner|}}
-                  <li><a href="/u/{{winner.username}}">@{{winner.username}}</a></li>
+                  <a class="island-lottery-card__winner" href="/u/{{winner.username}}">
+                    {{dAvatar winner imageSize="small"}}
+                    <span>@{{winner.username}}</span>
+                  </a>
                 {{/each}}
-              </ol>
+              </div>
             {{else}}
               <p>{{i18n "island_lottery.no_winners"}}</p>
             {{/if}}
           </div>
         {{/if}}
 
+        {{#if this.isOpen}}
+          <DButton
+            @action={{this.joinLottery}}
+            @label={{if this.currentUserParticipated "island_lottery.joined" "island_lottery.join"}}
+            @icon={{if this.currentUserParticipated "check" "reply"}}
+            @disabled={{this.currentUserParticipated}}
+            class="btn-primary island-lottery-card__join"
+          />
+        {{else if this.isCancelled}}
+          <div class="island-lottery-card__notice">{{i18n "island_lottery.cancelled"}}</div>
+        {{else if this.isDrawn}}
+          <div class="island-lottery-card__notice">
+            {{i18n "island_lottery.drawn_at"}}：<DRelativeDate @date={{this.lottery.drawn_at}} />
+          </div>
+        {{/if}}
+
         <div class="island-lottery-card__rules">
-          <strong>{{i18n "island_lottery.rules_title"}}</strong>
-          <ul>
-            <li>{{i18n "island_lottery.rule_reply"}}</li>
-            <li>{{i18n "island_lottery.rule_unique"}}</li>
-            <li>{{i18n "island_lottery.rule_excluded"}}</li>
-          </ul>
-        </div>
-
-        <div class="island-lottery-card__footer">
-          {{#if this.isDrawn}}
-            <span>{{i18n "island_lottery.drawn_at"}}：<DRelativeDate @date={{this.lottery.drawn_at}} /></span>
-          {{else if this.isCancelled}}
-            <span>{{i18n "island_lottery.cancelled"}}</span>
-          {{else}}
-            <span>{{i18n "island_lottery.reply_to_join"}}</span>
-          {{/if}}
-
-          {{#if this.canEdit}}
+          <div class="island-lottery-card__rules-summary">
+            <span>
+              {{i18n "island_lottery.participation_scope"}}
+              <strong>TL{{this.lottery.min_trust_level}}–TL{{this.lottery.max_trust_level}}</strong>
+            </span>
             <DButton
-              @action={{this.editLottery}}
-              @label="island_lottery.edit"
-              @icon="pencil"
-              class="btn-flat island-lottery-card__edit"
+              @action={{this.toggleRules}}
+              @label={{if this.rulesExpanded "island_lottery.hide_rules" "island_lottery.view_rules"}}
+              @icon={{if this.rulesExpanded "chevron-down" "chevron-right"}}
+              class="btn-flat island-lottery-card__rules-toggle"
             />
+          </div>
+          {{#if this.rulesExpanded}}
+            <ul>
+              <li>{{i18n "island_lottery.rule_reply"}}</li>
+              <li>{{i18n "island_lottery.rule_unique"}}</li>
+              <li>{{i18n "island_lottery.rule_excluded"}}</li>
+            </ul>
           {{/if}}
         </div>
       </section>
