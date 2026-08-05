@@ -1,0 +1,23 @@
+name: Discourse Plugin CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      core_ref:
+        description: Discourse version to test
+        required: false
+        default: tests-passed
+        type: choice
+        options: [main, tests-passed, stable]
+
+permissions:
+  contents: read
+
+jobs:
+  plugin-test:
+    uses: discourse/.github/.github/workflows/discourse-plugin.yml@v1
+    with:
+      core_ref: ${{ inputs.core_ref || 'tests-passed' }}

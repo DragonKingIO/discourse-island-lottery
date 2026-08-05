@@ -1,0 +1,6 @@
+zh_CN:
+  site_settings:
+    island_lottery_enabled: "启用小岛抽奖插件"
+    island_lottery_min_close_minutes: "创建后最短开奖等待时间（分钟）"
+    island_lottery_max_duration_days: "抽奖最长持续时间（天）"
+    island_lottery_max_winners: "单次抽奖最多中奖人数"

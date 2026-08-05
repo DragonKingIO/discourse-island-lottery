@@ -1,0 +1,66 @@
+.island-lottery-card {
+  margin: 1rem 0 1.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--primary-low-mid);
+  border-left: 4px solid #0f766e;
+  border-radius: 0.5rem;
+  background: var(--primary-very-low);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  h3,
+  h4 {
+    margin: 0.25rem 0;
+  }
+
+  &__status {
+    color: #0f766e;
+    font-weight: 600;
+  }
+
+  small {
+    overflow-wrap: anywhere;
+  }
+}
+
+.island-lottery-create-button {
+  margin: 0.75rem 0;
+}
+
+.island-lottery-form {
+  display: grid;
+  gap: 1rem;
+
+  label {
+    display: grid;
+    gap: 0.35rem;
+    font-weight: 600;
+  }
+
+  textarea {
+    min-height: 6rem;
+  }
+
+  &__levels {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  &__help {
+    margin: 0;
+    color: var(--primary-medium);
+    font-size: var(--font-down-1);
+  }
+}
+
+@media (max-width: 600px) {
+  .island-lottery-form__levels {
+    grid-template-columns: 1fr;
+  }
+}
