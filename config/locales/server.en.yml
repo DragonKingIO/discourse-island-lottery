@@ -1,0 +1,11 @@
+en:
+  site_settings:
+    island_lottery_enabled: "Enable IsleBBS lottery plugin"
+    island_lottery_min_close_minutes: "Minimum waiting time before a lottery closes (minutes)"
+    island_lottery_max_duration_days: "Maximum lottery duration (days)"
+    island_lottery_max_winners: "Maximum winners per lottery"
+  island_lottery:
+    edit_reason: "Update lottery information"
+    errors:
+      edit_forbidden: "Only the lottery creator within the first hour or staff can edit lottery information."
+      invalid_marker: "The lottery time, winner count, or trust-level settings are invalid."
