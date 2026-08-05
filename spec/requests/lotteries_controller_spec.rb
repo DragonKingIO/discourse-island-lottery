@@ -89,7 +89,10 @@ RSpec.describe DiscourseIslandLottery::LotteriesController do
   end
 
   it "creates a lottery from the marker in the first post" do
-    sign_in(creator)
+    # Keep this focused on marker parsing. The default test site can require a
+    # higher trust level for creating a new topic, which is unrelated to the
+    # lottery hook itself.
+    sign_in(admin)
 
     post "/posts.json",
          params: {
@@ -116,6 +119,7 @@ RSpec.describe DiscourseIslandLottery::LotteriesController do
   end
 
   it "lets the creator update the lottery and synchronizes the marker" do
+    first_post = Fabricate(:post, topic: topic, user: creator)
     lottery = DiscourseIslandLottery::Lottery.create!(
       topic: topic,
       creator: creator,
@@ -145,7 +149,7 @@ RSpec.describe DiscourseIslandLottery::LotteriesController do
       min_trust_level: 1,
       max_trust_level: 3,
     )
-    expect(topic.first_post.reload.raw).to include("prize: 新奖品", "winners_count: 2")
+    expect(first_post.reload.raw).to include("prize: 新奖品", "winners_count: 2")
   end
 
   it "blocks the creator after one hour but keeps staff access" do
