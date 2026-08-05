@@ -32,7 +32,7 @@ export default {
       api.addComposerToolbarPopupMenuOption({
         name: "island-lottery",
         group: "insertions",
-        icon: "gift",
+        icon: "ticket-simple",
         label: "island_lottery.composer_toolbar_create",
         action: (toolbarEvent) => {
           const composer = composerService.model;

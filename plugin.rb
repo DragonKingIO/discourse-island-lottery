@@ -11,6 +11,7 @@
 enabled_site_setting :island_lottery_enabled
 
 register_asset "stylesheets/island-lottery.scss"
+register_svg_icon "ticket-simple"
 
 module ::DiscourseIslandLottery
   PLUGIN_NAME = "discourse-island-lottery"

@@ -170,7 +170,7 @@ export default class IslandLotteryCard extends Component {
       <section class="island-lottery-card" aria-label={{i18n "island_lottery.title"}}>
         <div class="island-lottery-card__header">
           <div class="island-lottery-card__identity">
-            <span class="island-lottery-card__icon" aria-hidden="true">{{dIcon "gift"}}</span>
+            <span class="island-lottery-card__icon" aria-hidden="true">{{dIcon "ticket-simple"}}</span>
             <h3>{{i18n "island_lottery.title"}}</h3>
           </div>
           <div class="island-lottery-card__header-actions">

@@ -246,7 +246,7 @@ export default class IslandLotteryComposer extends Component {
         <DButton
           @action={{this.applyLottery}}
           @label={{if this.editing "island_lottery.save_edit" "island_lottery.composer_apply"}}
-          @icon="gift"
+          @icon="ticket-simple"
           @disabled={{this.submitDisabled}}
           @isLoading={{this.isSaving}}
           class="btn-primary island-lottery-composer-apply"
