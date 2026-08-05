@@ -11,6 +11,8 @@ export default {
 
   initialize() {
     withPluginApi((api) => {
+      const composerService = api.container.lookup("service:composer");
+
       api.serializeOnCreate("island_lottery_create", "islandLotteryCreate");
       api.serializeOnCreate("island_lottery_prize", "islandLotteryPrize");
       api.serializeOnCreate(
@@ -29,6 +31,44 @@ export default {
         "island_lottery_max_trust_level",
         "islandLotteryMaxTrustLevel"
       );
+
+      api.addComposerToolbarPopupMenuOption({
+        name: "island-lottery",
+        group: "insertions",
+        icon: "gift",
+        label: "island_lottery.composer_toolbar_create",
+        action: () => {
+          const model = composerService.model;
+          if (!model) {
+            return;
+          }
+
+          model.set("islandLotteryCreate", true);
+          model.set(
+            "islandLotteryClosesAt",
+            model.islandLotteryClosesAt || defaultCloseTime()
+          );
+          model.set(
+            "islandLotteryWinnersCount",
+            model.islandLotteryWinnersCount || 1
+          );
+          model.set(
+            "islandLotteryMinTrustLevel",
+            model.islandLotteryMinTrustLevel ?? 0
+          );
+          model.set(
+            "islandLotteryMaxTrustLevel",
+            model.islandLotteryMaxTrustLevel ?? 4
+          );
+          model.notifyPropertyChange("action");
+        },
+        condition: (composer) => {
+          const model = composer.model;
+          return (
+            model?.action === CREATE_TOPIC && !model.islandLotteryCreate
+          );
+        },
+      });
 
       api.modifyClass("component:composer-actions", {
         pluginId: "discourse-island-lottery",
