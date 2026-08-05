@@ -16,16 +16,18 @@ module ::DiscourseIslandLottery
   PLUGIN_NAME = "discourse-island-lottery"
 end
 
-require_relative "lib/discourse_island_lottery/engine"
-
 after_initialize do
-  Discourse::Application.routes.append do
-    mount ::DiscourseIslandLottery::Engine, at: "/island-lottery"
-  end
-
+  require_relative "app/controllers/discourse_island_lottery/lotteries_controller"
   require_relative "app/models/discourse_island_lottery/lottery"
   require_relative "lib/discourse_island_lottery/draw_service"
   require_relative "jobs/regular/island_lottery_draw"
+
+  Discourse::Application.routes.append do
+    get "/island-lottery/topic/:topic_id" => "discourse_island_lottery/lotteries#show"
+    post "/island-lottery" => "discourse_island_lottery/lotteries#create"
+    post "/island-lottery/:id/draw" => "discourse_island_lottery/lotteries#draw"
+    post "/island-lottery/:id/cancel" => "discourse_island_lottery/lotteries#cancel"
+  end
 
   add_to_serializer(:topic_view, :island_lottery) do
     lottery = ::DiscourseIslandLottery::Lottery.find_by(topic_id: object.topic.id)
