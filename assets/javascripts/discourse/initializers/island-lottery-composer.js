@@ -83,6 +83,70 @@ export default {
           },
         ];
       });
+
+      // Discourse's redesigned composer actions menu uses transformers instead
+      // of the legacy SelectKit extension above. Keep both registrations so the
+      // lottery action works regardless of which composer UI is enabled.
+      api.registerValueTransformer(
+        "composer-actions-content",
+        ({ value, context }) => {
+          if (context.action !== CREATE_TOPIC) {
+            return value;
+          }
+
+          const selected = context.composerModel.islandLotteryCreate;
+          value.push({
+            name: i18n(
+              selected
+                ? "island_lottery.composer_remove"
+                : "island_lottery.composer_create"
+            ),
+            description: i18n(
+              selected
+                ? "island_lottery.composer_remove_description"
+                : "island_lottery.composer_create_description"
+            ),
+            icon: "gift",
+            id: "toggleIslandLottery",
+          });
+
+          return value;
+        }
+      );
+
+      api.registerBehaviorTransformer(
+        "composer-actions-on-select",
+        ({ context, next }) => {
+          if (context.actionId === "toggleIslandLottery") {
+            const model = context.model;
+            model.toggleProperty("islandLotteryCreate");
+
+            if (model.islandLotteryCreate) {
+              model.set(
+                "islandLotteryClosesAt",
+                model.islandLotteryClosesAt || defaultCloseTime()
+              );
+              model.set(
+                "islandLotteryWinnersCount",
+                model.islandLotteryWinnersCount || 1
+              );
+              model.set(
+                "islandLotteryMinTrustLevel",
+                model.islandLotteryMinTrustLevel ?? 0
+              );
+              model.set(
+                "islandLotteryMaxTrustLevel",
+                model.islandLotteryMaxTrustLevel ?? 4
+              );
+            }
+
+            model.notifyPropertyChange("replyOptions");
+            model.notifyPropertyChange("action");
+          } else {
+            next();
+          }
+        }
+      );
     });
   },
 };
